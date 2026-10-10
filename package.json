@@ -1,0 +1,52 @@
+{
+  "name": "booknook",
+  "productName": "booknook",
+  "version": "1.0.0",
+  "description": "A cozy desktop app for logging books you've read.",
+  "main": "main.js",
+  "author": {
+    "name": "booknook",
+    "email": "booknook@example.com"
+  },
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "postinstall": "electron-builder install-app-deps",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.2",
+    "chart.js": "^4.4.0"
+  },
+  "devDependencies": {
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.booknook.app",
+    "productName": "booknook",
+    "files": [
+      "main.js",
+      "preload.js",
+      "db.js",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Office"
+    }
+  }
+}

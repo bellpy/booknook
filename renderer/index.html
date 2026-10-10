@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>booknook</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="head">
+    <div id="logo" class="logo"></div>
+    <div class="titles">
+      <h1>booknook</h1>
+      <p id="subtitle"></p>
+    </div>
+    <div class="head-right">
+      <div id="date-card" class="date-card"></div>
+      <div class="year-pick">
+        <select id="year-select" class="pill-select" aria-label="year"></select>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <div id="tabs" class="tab-list"></div>
+    <button id="add-book" class="pill primary"></button>
+  </nav>
+
+  <main id="pages">
+    <!-- HOME -->
+    <section id="page-home" class="page home-grid">
+      <div class="card goals-card">
+        <div class="card-title"><span data-glyph="tree"></span><span id="goals-title">goals</span></div>
+        <div class="card-body">
+          <div id="goal-rows"></div>
+          <div class="right"><button id="edit-goals" class="pill soft">edit goals</button></div>
+        </div>
+      </div>
+      <div class="card facts-card">
+        <div class="card-title"><span data-glyph="star"></span><span>fun facts</span></div>
+        <div class="card-body scroll" id="facts-body"></div>
+      </div>
+      <div class="card recent-card">
+        <div class="card-title"><span data-glyph="book"></span><span>just finished</span></div>
+        <div class="card-body" id="recent-body"></div>
+      </div>
+    </section>
+
+    <!-- LIBRARY -->
+    <section id="page-library" class="page">
+      <div class="card fill">
+        <div class="card-title"><span data-glyph="book"></span><span>your library</span></div>
+        <div class="card-body lib-body">
+          <div class="lib-top">
+            <label class="muted" for="search">search</label>
+            <input id="search" class="pill-input" type="text" autocomplete="off" spellcheck="false">
+            <span class="spacer"></span>
+            <button id="btn-edit" class="pill soft">edit</button>
+            <button id="btn-delete" class="pill soft">delete</button>
+            <button id="btn-export" class="pill soft">export csv…</button>
+            <button id="btn-import" class="pill soft">import csv…</button>
+            <button id="btn-clear" class="pill soft">clear library</button>
+          </div>
+          <div class="table-wrap">
+            <table id="lib-table">
+              <thead><tr id="lib-head"></tr></thead>
+              <tbody id="lib-rows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section id="page-stats" class="page stats-page">
+      <div id="tiles" class="tiles"></div>
+      <div class="card charts-card">
+        <div class="card-title"><span data-glyph="stats"></span><span>your reading in charts</span></div>
+        <div class="card-body">
+          <div id="charts-empty" class="empty" hidden>add your first book to see the stats</div>
+          <div id="charts-grid" class="charts-grid">
+            <div class="chart-cell"><canvas id="ch-months"></canvas></div>
+            <div class="chart-cell"><canvas id="ch-types"></canvas></div>
+            <div class="chart-cell"><canvas id="ch-ratings"></canvas></div>
+            <div class="chart-cell"><canvas id="ch-authors"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BOOKSHELF -->
+    <section id="page-shelf" class="page">
+      <div class="card fill">
+        <div class="card-title"><span data-glyph="shelf"></span><span>your bookshelf</span></div>
+        <div class="card-body shelf-body">
+          <div id="shelf-wall" class="shelf-wall"></div>
+          <div class="legend">
+            <span class="lg" style="background:var(--r1)">1★</span>
+            <span class="lg" style="background:var(--r2)">2★</span>
+            <span class="lg" style="background:var(--r3)">3★</span>
+            <span class="lg" style="background:var(--r4)">4★</span>
+            <span class="lg" style="background:var(--r5)">5★</span>
+            <span id="shelf-info" class="muted">hover over a spine!   ♫ audiobook   ♥ five stars</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- DIALOGS -->
+  <dialog id="book-dialog">
+    <form id="book-form" novalidate>
+      <h2 id="book-dialog-title">add a book</h2>
+      <label><span>author(s)</span><input class="pill-input" name="author" type="text" autocomplete="off" style="width:360px"></label>
+      <label><span>title</span><input class="pill-input" name="title" type="text" autocomplete="off" style="width:360px"></label>
+      <label><span>date read (dd/mm/yyyy)</span><input class="pill-input" name="date" type="text" autocomplete="off" style="width:170px"></label>
+      <label><span>pages</span><input class="pill-input" name="pages" type="text" inputmode="numeric" autocomplete="off" style="width:170px"></label>
+      <label><span>rating (1-5)</span>
+        <select class="pill-select" name="rating"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+      <label><span>type</span>
+        <select class="pill-select" name="type"><option>Physical</option><option>Audiobook</option></select></label>
+      <p class="form-error" id="book-error" hidden></p>
+      <div class="dialog-btns">
+        <button type="button" class="pill soft" data-close>cancel</button>
+        <button type="submit" class="pill primary">save book</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="goals-dialog">
+    <form id="goals-form" novalidate>
+      <h2>this year's goals</h2>
+      <label><span>books to read</span><input class="pill-input" name="books" type="text" inputmode="numeric" style="width:150px"></label>
+      <label><span>pages to turn</span><input class="pill-input" name="pages" type="text" inputmode="numeric" style="width:150px"></label>
+      <label><span>audiobooks</span><input class="pill-input" name="audio" type="text" inputmode="numeric" style="width:150px"></label>
+      <label><span>five-star reads</span><input class="pill-input" name="five" type="text" inputmode="numeric" style="width:150px"></label>
+      <p class="form-error" id="goals-error" hidden></p>
+      <div class="dialog-btns">
+        <button type="button" class="pill soft" data-close>cancel</button>
+        <button type="submit" class="pill primary">save goals</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="confirm-dialog">
+    <form method="dialog" id="confirm-form">
+      <h2 id="confirm-title">are you sure?</h2>
+      <p id="confirm-msg"></p>
+      <div class="dialog-btns">
+        <button type="submit" value="no" class="pill soft">cancel</button>
+        <button type="submit" value="yes" class="pill primary">delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="../node_modules/chart.js/dist/chart.umd.js"></script>
+  <script src="glyphs.js"></script>
+  <script src="stats.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
