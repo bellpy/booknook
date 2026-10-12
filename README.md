@@ -18,6 +18,7 @@ Results land in `dist/`.
 Stored in a SQLite file `booknook.db`:
 - Windows: `%APPDATA%\booknook\booknook.db`
 - Linux:   `~/.config/booknook/booknook.db`
+- MacOS:   `~/Library/Application Support/booknook/booknook.db`
 
 ## Layout
     main.js        window, database, file dialogs (main process)

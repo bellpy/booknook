@@ -119,7 +119,7 @@ input { user-select: text; }
 }
 .goals-card { grid-column: 1; grid-row: 1; }
 .facts-card { grid-column: 3; grid-row: 1; }
-.recent-card { grid-column: 2; grid-row: 1; }
+.recent-card .card-body { overflow: hidden; }
 
 /* goals */
 .goal { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
@@ -134,7 +134,7 @@ input { user-select: text; }
 .goals-card .card-body { justify-content: space-between; }
 
 /* recent */
-.recent-row { display: flex; align-items: center; gap: 14px; flex: 1; min-height: 0; max-height: 56px; }
+.recent-row { display: flex; align-items: center; gap: 14px; flex: none; height: 56px; }
 .recent-row .tag { width: 14px; align-self: stretch; margin: 8px 0; border: 2px solid var(--shelf-edge); border-radius: 6px; flex: none; }
 .recent-row .txt { flex: 1; min-width: 0; }
 .recent-row .l1 { display: flex; justify-content: space-between; gap: 10px; font-weight: 700; }
@@ -211,6 +211,10 @@ dialog h2 { margin: 0 0 12px; font: 700 28px/1.2 var(--font-head); }
 dialog label { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 12px 0; }
 dialog label span { min-width: 190px; }
 dialog p { margin: 0 0 4px; }
+dialog label.goal-opt { justify-content: flex-start; gap: 12px; }
+dialog label.goal-opt span { min-width: 150px; flex: 1; }
+dialog label.goal-opt input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--moss); flex: none; cursor: pointer; }
+.pill-input:disabled { opacity: .45; }
 .form-error { color: #B2503F; margin-top: 4px; max-width: 520px; }
 .dialog-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 

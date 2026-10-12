@@ -130,12 +130,13 @@ function summarize(list) {
 /** Rows for the home page goals card. */
 function goalProgress(books, goals, year) {
   const mine = books.filter((b) => b.date_read.startsWith(String(year)));
-  return [
-    ['books read', 'book', mine.length, goals.books],
-    ['pages turned', 'pages', mine.reduce((s, b) => s + b.pages, 0), goals.pages],
-    ['audiobooks', 'headphones', mine.filter((b) => b.type === 'Audiobook').length, goals.audio],
-    ['five-star reads', 'star', mine.filter((b) => b.rating === 5).length, goals.five],
+  const rows = [
+    ['books', 'books read', 'book', mine.length, goals.books],
+    ['pages', 'pages turned', 'pages', mine.reduce((s, b) => s + b.pages, 0), goals.pages],
+    ['audio', 'audiobooks', 'headphones', mine.filter((b) => b.type === 'Audiobook').length, goals.audio],
+    ['five', 'five-star reads', 'star', mine.filter((b) => b.rating === 5).length, goals.five],
   ];
+  return rows.filter((r) => !goals.enabled || goals.enabled[r[0]] !== false).map((r) => r.slice(1));
 }
 
 /** [[year, month(1-12)], ...] from the first to the last month, inclusive. */

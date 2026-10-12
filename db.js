@@ -91,26 +91,36 @@ class BookDB {
 
   close() { this.db.close(); }
 
+  /** { books, pages, audio, five, enabled: { books: true, ... } } */
   goals() {
-    const out = { ...GOAL_DEFAULTS };
-    for (const r of this.db.prepare("SELECT key, value FROM settings WHERE key LIKE 'goal_%'").all()) {
-      const n = parseInt(r.value, 10);
-      if (Number.isFinite(n)) out[r.key.slice(5)] = n;
+    const out = { ...GOAL_DEFAULTS, enabled: {} };
+    for (const k of Object.keys(GOAL_DEFAULTS)) out.enabled[k] = true;
+    for (const r of this.db.prepare('SELECT key, value FROM settings').all()) {
+      if (r.key.startsWith('goal_')) {
+        const k = r.key.slice(5);
+        const n = parseInt(r.value, 10);
+        if (k in GOAL_DEFAULTS && Number.isFinite(n)) out[k] = n;
+      } else if (r.key.startsWith('enabled_goal_')) {
+        const k = r.key.slice('enabled_goal_'.length);
+        if (k in GOAL_DEFAULTS) out.enabled[k] = r.value !== '0';
+      }
     }
     return out;
   }
 
   setGoals(goals) {
     const stmt = this.db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
-    const run = this.db.transaction((entries) => {
-      for (const [k, v] of entries) {
-        if (!(k in GOAL_DEFAULTS)) continue;
-        const n = Number(v);
-        if (!Number.isInteger(n) || n <= 0) throw new Error('Goals must be whole numbers above zero.');
-        stmt.run(`goal_${k}`, String(n));
+    const run = this.db.transaction(() => {
+      for (const k of Object.keys(GOAL_DEFAULTS)) {
+        if (goals[k] !== undefined) {
+          const n = Number(goals[k]);
+          if (!Number.isInteger(n) || n <= 0) throw new Error('Goals must be whole numbers above zero.');
+          stmt.run(`goal_${k}`, String(n));
+        }
+        if (goals.enabled && k in goals.enabled) stmt.run(`enabled_goal_${k}`, goals.enabled[k] ? '1' : '0');
       }
     });
-    run(Object.entries(goals));
+    run();
   }
 
   count() { return this.db.prepare('SELECT COUNT(*) AS n FROM books').get().n; }

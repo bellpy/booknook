@@ -138,7 +138,12 @@ function renderGoals() {
   // goal targets are shared: progress is counted for the selected year (current year when viewing all time)
   const year = state.year === 'all' ? new Date().getFullYear() : +state.year;
   $('#goals-title').textContent = `${year} goals`;
-  $('#goal-rows').innerHTML = goalProgress(state.books, state.goals, year).map(([label, icon, value, goal]) => {
+  const rows = goalProgress(state.books, state.goals, year);
+  if (!rows.length) {
+    $('#goal-rows').innerHTML = '<div class="empty">no goals selected. Click "edit goals" to pick some.</div>';
+    return;
+  }
+  $('#goal-rows').innerHTML = rows.map(([label, icon, value, goal]) => {
     const pct = goal ? Math.min(value / goal, 1) : 0;
     const done = pct >= 1;
     return `<div class="goal${done ? ' done' : ''}">
@@ -151,9 +156,12 @@ function renderGoals() {
 }
 
 function renderRecent() {
+  const el = $('#recent-body');
+  // as many 56px rows as fit, so the list runs all the way down the card (at least 4)
+  const fit = Math.max(4, Math.floor(el.clientHeight / 56));
   const recent = [...scoped()].sort((a, b) =>
-    a.date_read === b.date_read ? b.id - a.id : (a.date_read < b.date_read ? 1 : -1)).slice(0, 8);
-  $('#recent-body').innerHTML = recent.length
+    a.date_read === b.date_read ? b.id - a.id : (a.date_read < b.date_read ? 1 : -1)).slice(0, fit);
+    el.innerHTML = recent.length
     ? recent.map((b) => `<div class="recent-row">
         <span class="tag" style="background:${RATING_COLORS[b.rating]}"></span>
         <div class="txt">
@@ -339,7 +347,6 @@ function renderShelf() {
   const gap = Math.round(4 * k);
   const bw = 2; // spine border
   const dims = books.map((b) => ({ b, w: Math.round((16 + b.pages / 18) * k), h: Math.round((96 + b.pages / 6) * k) }));
-  const rowH = Math.max(Math.round(250 * k), Math.max(...dims.map((d) => d.h)) + Math.round(20 * k));
 
   const rows = [];
   let cur = [];
@@ -352,18 +359,22 @@ function renderShelf() {
   rows.push(cur);
 
   const lift = Math.round(10 * k);
-  wall.innerHTML = rows.map((row) => `<div class="shelf-row" style="height:${rowH}px;padding:0 ${margin}px ${lift}px;` +
-    `gap:${gap}px;margin-bottom:${Math.round(26 * k)}px">` +
-    row.map(({ b, w, h }) => {
-      const cap = Math.round(24 * k);
-      return `<div class="spine" data-id="${b.id}" style="width:${w}px;height:${h}px;background:${RATING_COLORS[b.rating]};` +
-        `border-radius:${Math.round(9 * k)}px;border-width:${k < 1.6 ? bw : 3}px;font-size:${fontPx}px">` +
-        `<div class="cap" style="height:${cap}px">${b.type === 'Audiobook' ? '♫' : ''}</div>` +
-        `<div class="ttl"><span class="vt">${esc(b.title)}</span></div>` +
-        `<div class="cap" style="height:${cap}px;color:var(--card)">${b.rating === 5 ? '♥' : ''}</div></div>`;
-    }).join('') +
-    `<div class="shelf-board" style="left:${margin - Math.round(14 * k)}px;right:${margin - Math.round(14 * k)}px;` +
-    `top:${rowH - lift}px;height:${Math.round(18 * k)}px;border-radius:${Math.round(9 * k)}px"></div></div>`).join('');
+  wall.innerHTML = rows.map((row) => {
+    // each shelf is only as tall as its tallest book (plus a little headroom)
+    const rowH = Math.max(Math.round(200 * k), Math.max(...row.map((d) => d.h)) + Math.round(16 * k));
+    return `<div class="shelf-row" style="height:${rowH}px;padding:0 ${margin}px ${lift}px;` +
+      `gap:${gap}px;margin-bottom:${Math.round(18 * k)}px">` +
+      row.map(({ b, w, h }) => {
+        const cap = Math.round(24 * k);
+        return `<div class="spine" data-id="${b.id}" style="width:${w}px;height:${h}px;background:${RATING_COLORS[b.rating]};` +
+          `border-radius:${Math.round(9 * k)}px;border-width:${k < 1.6 ? bw : 3}px;font-size:${fontPx}px">` +
+          `<div class="cap" style="height:${cap}px">${b.type === 'Audiobook' ? '♫' : ''}</div>` +
+          `<div class="ttl"><span class="vt">${esc(b.title)}</span></div>` +
+          `<div class="cap" style="height:${cap}px;color:var(--card)">${b.rating === 5 ? '♥' : ''}</div></div>`;
+      }).join('') +
+      `<div class="shelf-board" style="left:${margin - Math.round(14 * k)}px;right:${margin - Math.round(14 * k)}px;` +
+      `top:${rowH - lift}px;height:${Math.round(18 * k)}px;border-radius:${Math.round(9 * k)}px"></div></div>`;
+  }).join('');
 }
 
 function onShelfHover(e) {
@@ -414,9 +425,20 @@ async function submitBook(e) {
   await refresh();
 }
 
+const GOAL_KEYS = ['books', 'pages', 'audio', 'five'];
+
+function syncGoalInputs() {
+  const f = $('#goals-form');
+  for (const k of GOAL_KEYS) f[k].disabled = !f[`on_${k}`].checked;
+}
+
 function openGoalsDialog() {
   const f = $('#goals-form');
-  for (const k of ['books', 'pages', 'audio', 'five']) f[k].value = state.goals[k];
+  for (const k of GOAL_KEYS) {
+    f[k].value = state.goals[k];
+    f[`on_${k}`].checked = state.goals.enabled[k] !== false;
+  }
+  syncGoalInputs();
   $('#goals-error').hidden = true;
   $('#goals-dialog').showModal();
   f.books.focus();
@@ -425,13 +447,19 @@ function openGoalsDialog() {
 async function submitGoals(e) {
   e.preventDefault();
   const f = e.target;
-  const out = {};
-  for (const k of ['books', 'pages', 'audio', 'five']) out[k] = Number(f[k].value.trim());
-  if (Object.values(out).some((n) => !Number.isInteger(n) || n <= 0)) {
-    const box = $('#goals-error');
-    box.textContent = 'Goals must be whole numbers above zero.';
-    box.hidden = false;
-    return;
+  const out = { enabled: {} };
+  for (const k of GOAL_KEYS) {
+    out.enabled[k] = f[`on_${k}`].checked;
+    out[k] = Number(f[k].value.trim());
+    if (!Number.isInteger(out[k]) || out[k] <= 0) {
+      if (out.enabled[k]) {
+        const box = $('#goals-error');
+        box.textContent = 'Goals must be whole numbers above zero.';
+        box.hidden = false;
+        return;
+      }
+      out[k] = state.goals[k];
+    }
   }
   try { await api.setGoals(out); } catch (err) { toast(err.message, true); return; }
   $('#goals-dialog').close();
@@ -444,6 +472,7 @@ function wire() {
   $('#edit-goals').addEventListener('click', openGoalsDialog);
   $('#book-form').addEventListener('submit', submitBook);
   $('#goals-form').addEventListener('submit', submitGoals);
+  $('#goals-form').addEventListener('change', syncGoalInputs);
   $$('dialog [data-close]').forEach((b) => b.addEventListener('click', () => b.closest('dialog').close()));
 
   let searchTimer = null;
@@ -492,6 +521,7 @@ function wire() {
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
+      if (state.page === 'home') renderRecent();
       if (state.page === 'shelf') renderShelf();
     }, 120);
   });

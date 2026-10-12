@@ -132,10 +132,11 @@
   <dialog id="goals-dialog">
     <form id="goals-form" novalidate>
       <h2>this year's goals</h2>
-      <label><span>books to read</span><input class="pill-input" name="books" type="text" inputmode="numeric" style="width:150px"></label>
-      <label><span>pages to turn</span><input class="pill-input" name="pages" type="text" inputmode="numeric" style="width:150px"></label>
-      <label><span>audiobooks</span><input class="pill-input" name="audio" type="text" inputmode="numeric" style="width:150px"></label>
-      <label><span>five-star reads</span><input class="pill-input" name="five" type="text" inputmode="numeric" style="width:150px"></label>
+      <p class="muted">tick the goals you want to track</p>
+      <label class="goal-opt"><input type="checkbox" name="on_books"><span>books to read</span><input class="pill-input" name="books" type="text" inputmode="numeric" style="width:130px"></label>
+      <label class="goal-opt"><input type="checkbox" name="on_pages"><span>pages to turn</span><input class="pill-input" name="pages" type="text" inputmode="numeric" style="width:130px"></label>
+      <label class="goal-opt"><input type="checkbox" name="on_audio"><span>audiobooks</span><input class="pill-input" name="audio" type="text" inputmode="numeric" style="width:130px"></label>
+      <label class="goal-opt"><input type="checkbox" name="on_five"><span>five-star reads</span><input class="pill-input" name="five" type="text" inputmode="numeric" style="width:130px"></label>
       <p class="form-error" id="goals-error" hidden></p>
       <div class="dialog-btns">
         <button type="button" class="pill soft" data-close>cancel</button>

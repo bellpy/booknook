@@ -14,7 +14,8 @@
     "postinstall": "electron-builder install-app-deps",
     "dist": "electron-builder",
     "dist:win": "electron-builder --win",
-    "dist:linux": "electron-builder --linux"
+    "dist:linux": "electron-builder --linux",
+    "dist:mac": "electron-builder --mac"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.2",
@@ -36,6 +37,10 @@
     ],
     "win": {
       "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.lifestyle"
     },
     "nsis": {
       "oneClick": false,

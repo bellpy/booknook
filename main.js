@@ -97,7 +97,7 @@ if (!app.requestSingleInstanceLock()) {
   });
 
   app.whenReady().then(() => {
-    if (app.isPackaged) Menu.setApplicationMenu(null);
+    if (app.isPackaged && process.platform !== 'darwin') Menu.setApplicationMenu(null);
     db = openDatabase();
     registerIpc();
     createWindow();
